@@ -12,23 +12,44 @@ namespace TestControlCommands
         static SerialPort sr = new SerialPort();
         static void Main(string[] args)
         {
-            sr.PortName = "COM10";
-            sr.BaudRate = 115200;
-            sr.DataReceived += Sr_DataReceived;
-            Console.WriteLine("Type in AT20Q Control Commands only. Invalid commands will trigger error beep on AT20Q");
-            Console.WriteLine("Type in Q to exit.");
-            sr.Open();
-            string ctrlCmd = "";
-            while (ctrlCmd != "Q")
+            try
             {
-                ctrlCmd = Console.ReadLine();
-                if (ctrlCmd.ToUpper() == "Q")
-                    break;
+                Console.WriteLine("Type in AT20Q/AT30Q Control Commands only. Invalid commands will trigger error beep on Scanner");
+                Console.WriteLine(".....");
+                Console.Write("Key in your COM Port number: ");
+                string comPort = Console.ReadLine();
 
-                sr.Write(ctrlCmd + "\r");
+                comPort = comPort.ToUpper();
+                comPort = comPort.Replace(" ","").Replace("COM:", "").Replace("COM", "").Replace("CO", "").Replace("C", "");
+
+                if (comPort != "")
+                {
+                    int iPort = Convert.ToInt32(comPort);
+                    Console.WriteLine("Type in Q to exit.");
+
+                    sr.PortName = "COM" + iPort;
+                    sr.BaudRate = 115200;
+                    sr.DataReceived += Sr_DataReceived;
+
+                    sr.Open();
+                    string ctrlCmd = "";
+                    while (ctrlCmd != "Q")
+                    {
+                        ctrlCmd = Console.ReadLine();
+                        if (ctrlCmd.ToUpper() == "Q")
+                            break;
+
+                        sr.Write(ctrlCmd.ToUpper().Trim() + "\r");
+                    }
+
+                    sr.Close();
+                }
             }
-
-            sr.Close();
+            catch (Exception)
+            {
+                Console.WriteLine("Invalid COM Port number!");
+            }
+          
         }
 
         private static void Sr_DataReceived(object sender, SerialDataReceivedEventArgs e)
